@@ -1,0 +1,589 @@
+{
+  "name": "QR-TransactionAgent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c8ea630e-ddd3-4c5c-875e-a36906e86e68",
+      "name": "Telegram Trigger",
+      "webhookId": "47fc648b-3f9c-42f6-a16d-3d8446fb182a",
+      "credentials": {
+        "telegramApi": {
+          "id": "XA7aeNgbpeIsATRp",
+          "name": "TelegramQR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1e46b346-7b42-406e-9f44-b6a9e4d94ecd",
+              "leftValue": "={{ $json.message.photo }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        0
+      ],
+      "id": "0a7ec0d3-6245-43c5-b44d-f739b739233d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[3].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        -64
+      ],
+      "id": "4e8d77ec-4740-4112-b3ab-455dcc23f6c6",
+      "name": "Get a file",
+      "webhookId": "d85c8d2b-ac09-4aa3-9607-21520c4229e4",
+      "credentials": {
+        "telegramApi": {
+          "id": "XA7aeNgbpeIsATRp",
+          "name": "TelegramQR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Eres un experto en extraer información comprobantes de pago o transacciones electronicas de dinero. extrae toda la información que ves claramente de una imagen detalladamente como montos de dinero, nombres, empresas, descripciones, etc",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -64
+      ],
+      "id": "40acd489-3c59-4551-a4fb-a59eefa0e530",
+      "name": "Analyze image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pe83BqcaVJqwl0qs",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.content.parts[0].text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Comprobante",
+              "description": "Si la descripción coincide con un comprobante de pago o transacción"
+            }
+          ]
+        },
+        "options": {
+          "fallback": "other"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        -48
+      ],
+      "id": "d2c66a8e-fdfd-45f9-b5f1-b830a67b531d",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        960,
+        176
+      ],
+      "id": "bc4ae3f7-5435-47eb-98d5-bcca78733168",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pe83BqcaVJqwl0qs",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        240
+      ],
+      "id": "b34f8e4c-db08-402c-a86d-e1e9acaa976d",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LWgCOgLj6XWlzPSt8p-6cX5c2zPh5Zkif7KUQVTz9Gg",
+          "mode": "list",
+          "cachedResultName": "Contailidad QR's",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LWgCOgLj6XWlzPSt8p-6cX5c2zPh5Zkif7KUQVTz9Gg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LWgCOgLj6XWlzPSt8p-6cX5c2zPh5Zkif7KUQVTz9Gg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha de registro": "={{ $json.fechaProcesamiento }}",
+            "Banco emisor": "={{ $json.cuentaOrigen.banco }}",
+            "Banco receptor": "={{ $json.cuentaDestino.banco }}",
+            "Cuenta receptora": "={{ $json.cuentaDestino.numeroCuenta }}",
+            "Nombre cliente": "={{ $json.cuentaOrigen.titular }}",
+            "# De transacción": "={{ $json.operacion.numeroReferencia }}",
+            "Estado de transaccíon": "={{ $json.operacion.estadoOperacion }}",
+            "Fecha de transacción": "={{ $json.operacion.fechaHora }}",
+            "Monto de la transacción": "={{ $json.operacion.importe }}",
+            "Descripción": "={{ $json.operacion['Descripción de transacción | Conversación'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha de registro",
+              "displayName": "Fecha de registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Banco emisor",
+              "displayName": "Banco emisor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Banco receptor",
+              "displayName": "Banco receptor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cuenta receptora",
+              "displayName": "Cuenta receptora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nombre cliente",
+              "displayName": "Nombre cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Descripción",
+              "displayName": "Descripción",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "# De transacción",
+              "displayName": "# De transacción",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estado de transaccíon",
+              "displayName": "Estado de transaccíon",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha de transacción",
+              "displayName": "Fecha de transacción",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Monto de la transacción",
+              "displayName": "Monto de la transacción",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1824,
+        -192
+      ],
+      "id": "045d67f9-de96-4604-b98a-24f622f103ed",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YcqoLjrrkX0dfpPn",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-pro",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-pro"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Actúa como un extractor de datos profesional especializado en analizar comprobantes bancarios de transacciones. Tu objetivo es procesar la información contenida en la imagen de un comprobante de transacción bancaria y extraer los datos clave para generar una respuesta en formato JSON.\n\n### Requisitos del Proceso:\n\n1.  **Entrada:** Se te proporcionará una imagen o texto que contenga un comprobante de transacción bancaria.\n\n2.  **Análisis:** Identifica y extrae con precisión los siguientes campos, incluso si están en diferentes idiomas o formatos:\n\n      * **`tipo_operacion`**: (e.g., Transferencia, Pago de Servicio, Depósito)\n      * **`monto`**: El valor numérico de la transacción.\n      * **`moneda`**: (e.g., USD, EUR, MXN, COP).\n      * **`fecha_y_hora`**: La fecha y hora exactas de la transacción.\n      * **`numero_referencia`**: El identificador único de la transacción.\n      * **`estado_transaccion`**: (e.g., Completada, Pendiente, Fallida).\n      * **`banco_origen`**: Nombre del banco desde donde se realizó la transacción.\n      * **`banco_destino`**: Nombre del banco al que se transfirieron los fondos.\n      * **`cuenta_origen`**: (opcional) Número de cuenta o IBAN de origen.\n      * **`cuenta_destino`**: (opcional) Número de cuenta o IBAN de destino.\n      * **`nombre_titular_origen`**: (opcional) Nombre del titular de la cuenta de origen.\n      * **`nombre_titular_destino`**: (opcional) Nombre del titular de la cuenta de destino.\n\n3.  **Salida:** Proporciona los datos extraídos en un formato JSON limpio MINIFICADO, estructurado de la siguiente manera:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"tipoComprobante\": { \"type\": \"string\" },\n    \"operacion\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"tipoOperacion\": { \"type\": \"string\" },\n        \"estadoOperacion\": { \"type\": \"string\" },\n        \"fechaHora\": { \"type\": \"string\" },\n        \"importe\": { \"type\": \"number\" },\n        \"moneda\": { \"type\": \"string\" },\n        \"comision\": { \"type\": \"number\", \"nullable\": true },\n        \"folioOperacion\": { \"type\": \"string\", \"nullable\": true },\n        \"numeroReferencia\": { \"type\": \"string\", \"nullable\": true },\n        \"claveRastreo\": { \"type\": \"string\", \"nullable\": true },\n        \"autorizacion\": { \"type\": \"string\", \"nullable\": true },\n        \"Descripción de transacción | Conversación\": {\"type\": \"string\", \"nullable\": \"true\"}\n      },\n      \"required\": [\"tipoOperacion\", \"estadoOperacion\", \"fechaHora\", \"importe\", \"moneda\"]\n    },\n    \"cuentaOrigen\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"banco\": { \"type\": \"string\" },\n        \"titular\": { \"type\": \"string\", \"nullable\": true },\n        \"numeroCuenta\": { \"type\": \"string\", \"nullable\": true }\n      },\n      \"required\": [\"banco\"]\n    },\n    \"cuentaDestino\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"banco\": { \"type\": \"string\" },\n        \"titular\": { \"type\": \"string\", \"nullable\": true },\n        \"numeroCuenta\": { \"type\": \"string\", \"nullable\": true }\n      },\n      \"required\": [\"banco\"]\n    },\n    \"fechaProcesamiento\": { \"type\": \"string\" }\n  },\n  \"required\": [\"operacion\", \"cuentaOrigen\", \"cuentaDestino\", \"fechaProcesamiento\"]\n}\n\nTambien es importante saber cuando procesaste este comprobante y agregalo al output de json, la fecha del dia de hoy es: {{ $now.format('yyyy-MM-dd HH:mm') }}\n\nIMPORTANTE:\nDevuelve ÚNICAMENTE un objeto JSON válido que cumpla con el esquema solicitado.\nNo me devuelvas todo en una sola variable text, si no que cada variable tenga su valor como el esquema que te solicite.",
+              "role": "model"
+            },
+            {
+              "content": "={{ $json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        -192
+      ],
+      "id": "6f247869-586e-4b2b-9d85-639ac26fcdd4",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pe83BqcaVJqwl0qs",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  JSON.parse($input.first().json.content.parts[0].text)\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1632,
+        -192
+      ],
+      "id": "2f5a0d35-1219-4093-bad3-06d2a253e562",
+      "name": "Vida hp"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Text Classifier').item.json.content.parts[0].text }}",
+        "options": {
+          "systemMessage": "Actúa como un agente experto en comunicación con clientes de un negocio. \nTu objetivo principal es generar un mensaje breve, claro y profesional dirigido al dueño del negocio cada vez que se procese correctamente un comprobante de transacción bancaria.\n\n### Entrada:\nSe te proporcionará el texto identificado previamente por el clasificador de comprobantes. Contendrá información como tipo de operación, monto, moneda, fecha y hora, número de referencia, banco de origen y destino, cuentas, y titulares.\n\n### Instrucciones para generar el mensaje:\n1. Analiza el input y extrae los datos clave de la transacción.\n2. Confirma SIEMPRE que el comprobante fue procesado exitosamente.\n3. Incluye en el mensaje (si está disponible en el input):\n   - Tipo de operación.\n   - Estado de la operación.\n   - Monto y moneda.\n   - Fecha y hora de la transacción.\n   - Número o folio de referencia.\n   - Banco y cuenta de origen + titular.\n   - Banco y cuenta de destino + titular.\n4. Usa un tono cordial y confiable. Breve pero informativo (máx. 5 frases).\n5. Utiliza emojis relacionados con seguridad, dinero y éxito ✅💳🏦💰.\n6. Sé siempre consistente en la confirmación del procesamiento.\n\n### Formato de salida:\nDevuelve únicamente el mensaje final como un texto plano, sin JSON ni explicaciones adicionales.\n\n### Ejemplos de mensajes:\n✅ El comprobante fue procesado correctamente.  \n📌 Operación: **Envío Realizado**.  \n💰 Monto: **$5,000.00 COP**.  \n🕒 Fecha y hora: **28/08/2025 10:28 a.m.**  \n🏦 Origen: **Nequi (Cuenta: Disponible)** | Titular: *No disponible*.  \n🏦 Destino: **Nequi (Cuenta: 3104724977)** | Titular: *Santiago Reyes*.  \n🔑 Referencia: **M34844137**.  \n\n---\n\n🎉 ¡Proceso completado exitosamente!  \n📌 Tipo de operación: **Transferencia** (Estado: Completada).  \n💳 Banco Origen: **Bancolombia**, Cuenta: *1234-5678-90*, Titular: *Carlos Pérez*.  \n🏦 Banco Destino: **Nequi**, Cuenta: *3001234567*, Titular: *Ana Torres*.  \n💰 Monto: **$250,000 COP**.  \n🕒 Fecha y hora: **15/07/2025 09:15 p.m.**  \n🔑 Folio de operación: **REF-987654321**.  \n\n---\n\n💳 ¡Tu comprobante se ha validado con éxito!  \n📌 Operación: **Pago de Servicio** (Estado: Realizado).  \n💰 Valor: **$120,000 COP**.  \n🕒 Fecha y hora: **03/09/2025 03:49 p.m.**  \n🏦 Origen: **Davivienda (Cuenta: 123456789)** | Titular: *María López*.  \n🏦 Destino: **EPM (Cuenta: 0987654321)** | Titular: *EPM Servicios Públicos*.  \n🔑 Clave de rastreo: **XYZ123ABC**.  \n\n---\n\nIMPORTANTE: Siempre confirma explícitamente que el comprobante fue procesado y presenta los datos de manera clara, confiable y amigable con emojis.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2032,
+        -192
+      ],
+      "id": "1cca6d68-87e6-4c8c-ab67-7d6a30a47347",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        16
+      ],
+      "id": "172a53e8-19e6-4c3a-8b10-4a3e6a57056c",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pe83BqcaVJqwl0qs",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2064,
+        16
+      ],
+      "id": "ab301d70-dfbe-4789-b56c-6b2f6695ac22",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2384,
+        -192
+      ],
+      "id": "18a722db-433d-4e63-be55-1fe8b5cdae72",
+      "name": "Send a text message",
+      "webhookId": "603f1714-1fd6-4757-a958-8fe9a9a67ecb",
+      "credentials": {
+        "telegramApi": {
+          "id": "XA7aeNgbpeIsATRp",
+          "name": "TelegramQR"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Vida hp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vida hp": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5d44d721-2fcd-4c70-b16a-3ddfee4d49c8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "47d537366af23a0e2d02be60748df1be4955ad8066399946cdbbfff2cb33f6f4"
+  },
+  "id": "F3Hj56mc6DDauMYr",
+  "tags": []
+}
