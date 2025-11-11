@@ -1,0 +1,33 @@
+# Base de datos SQLite
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Entorno virtual de Python
+venv/
+env/
+ENV/
+.venv/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Distribución / empaquetado
+dist/
+build/
+*.egg-info/

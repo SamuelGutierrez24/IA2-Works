@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # Servicio de la API FastAPI
+  api:
+    # Nombre del contenedor
+    container_name: quicktask-api
+    
+    # Construye la imagen desde el Dockerfile local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    # Mapeo de puertos: host:contenedor
+    ports:
+      - "8000:8000"
+    
+    # Monta el código local para desarrollo (hot-reload)
+    volumes:
+      # Monta código fuente (permite cambios en tiempo real)
+      - .:/app
+      # Volumen persistente para la base de datos SQLite
+      - db_data:/app/data
+      # Excluye __pycache__ para evitar conflictos
+      - /app/__pycache__
+    
+    # Variables de entorno
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=sqlite:///./data/tasks.db
+    
+    # Comando personalizado con hot-reload para desarrollo
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    
+    # Reinicio automático en caso de fallo
+    restart: unless-stopped
+    
+    # Healthcheck para verificar que la API está respondiendo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Volúmenes persistentes
+volumes:
+  # Volumen para persistir la base de datos SQLite
+  db_data:
+    driver: local
